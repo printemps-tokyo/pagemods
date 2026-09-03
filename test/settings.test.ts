@@ -24,6 +24,8 @@ test("normalize fills defaults and drops junk", () => {
   assert.equal(t.core.shortcut, "Alt+K");
   assert.equal(t.core.panelSide, "right");
   assert.deepEqual(t.core.disabledModules, ["a"]);
+  assert.equal(normalize({ core: { panelSide: "bottom" } }).core.panelSide, "bottom");
+  assert.equal(normalize({ core: { panelSide: "left" } }).core.panelSide, "left");
   assert.deepEqual(t.modules, { formfill: { rules: [] } });
 });
 

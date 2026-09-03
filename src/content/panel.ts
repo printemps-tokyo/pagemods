@@ -119,8 +119,9 @@ export function createPanel(opts: PanelOptions): PanelHost {
   function render(): void {
     stopRecorder();
     const settings = opts.settings();
-    drawer.classList.toggle("pm-right", settings.core.panelSide === "right");
-    drawer.classList.toggle("pm-left", settings.core.panelSide === "left");
+    for (const side of ["right", "left", "bottom"] as const) {
+      drawer.classList.toggle(`pm-${side}`, settings.core.panelSide === side);
+    }
     const modules = opts.enabledModules();
     if (current !== GENERAL && !modules.some((m) => m.id === current)) current = GENERAL;
 
@@ -247,12 +248,13 @@ export function createPanel(opts: PanelOptions): PanelHost {
       "select",
       {
         onchange: () => {
-          const value = side.value === "left" ? "left" : "right";
+          const value = side.value === "left" || side.value === "bottom" ? side.value : "right";
           void ctx.store.updateCore((core) => ({ ...core, panelSide: value }));
         },
       },
       h("option", { value: "right", selected: settings.core.panelSide === "right" }, "Right"),
       h("option", { value: "left", selected: settings.core.panelSide === "left" }, "Left"),
+      h("option", { value: "bottom", selected: settings.core.panelSide === "bottom" }, "Bottom"),
     );
     container.appendChild(row("Panel side", side));
 

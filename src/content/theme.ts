@@ -39,6 +39,10 @@ export const CSS = `
 }
 .pm-drawer.pm-right { right: 0; }
 .pm-drawer.pm-left { left: 0; border-left: 0; border-right: 1px solid var(--border); }
+.pm-drawer.pm-bottom { left: 0; right: 0; top: auto; width: 100%; height: min(50vh, 460px); border-left: 0; border-top: 1px solid var(--border); }
+.pm-drawer.pm-bottom .pm-row { grid-template-columns: 160px 1fr; }
+.pm-drawer.pm-bottom textarea { min-height: 80px; }
+.pm-drawer.pm-bottom .pm-toast { left: auto; right: 12px; max-width: 520px; }
 .pm-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg-side); border-bottom: 1px solid var(--border); }
 .pm-title { font-weight: 700; font-size: 14px; color: var(--fg-bright); letter-spacing: .02em; }
 .pm-title::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--blue); margin-right: 8px; vertical-align: 1px; }

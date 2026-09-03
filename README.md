@@ -84,7 +84,7 @@ keyboard command use.
 - In-page shortcut: type it or click Record and press the keys. Chrome's own
   shortcut list cannot bind punctuation, which is why this one is matched in
   the page and why `Ctrl+;` can be the default.
-- Panel side, per-mod on/off switches, export and import of the whole
+- Panel position (right, left or a drawer along the bottom), per-mod on/off switches, export and import of the whole
   settings document as JSON, reset.
 
 ## Adding a mod

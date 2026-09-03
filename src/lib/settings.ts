@@ -10,7 +10,7 @@
 export const STORAGE_KEY = "pagemods";
 export const SETTINGS_VERSION = 1;
 
-export type PanelSide = "right" | "left";
+export type PanelSide = "right" | "left" | "bottom";
 
 export interface CoreSettings {
   /** In-page shortcut that toggles the panel, e.g. "Ctrl+;". */
@@ -45,7 +45,8 @@ export function normalize(raw: unknown): Settings {
     typeof core.shortcut === "string" && core.shortcut.trim() !== ""
       ? core.shortcut.trim()
       : DEFAULT_CORE.shortcut;
-  const panelSide: PanelSide = core.panelSide === "left" ? "left" : "right";
+  const panelSide: PanelSide =
+    core.panelSide === "left" || core.panelSide === "bottom" ? core.panelSide : "right";
   const disabledModules = Array.isArray(core.disabledModules)
     ? core.disabledModules.filter((id): id is string => typeof id === "string")
     : [];
