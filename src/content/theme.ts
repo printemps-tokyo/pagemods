@@ -96,6 +96,20 @@ textarea { min-height: 120px; font-family: ui-monospace, SFMono-Regular, Menlo, 
 .pm-toast-ok { border-color: var(--green); color: var(--green); }
 .pm-toast-warn { border-color: var(--yellow); color: var(--yellow); }
 .pm-toast-error { border-color: var(--red); color: var(--red); }
+input[type=color] { width: 34px; height: 26px; padding: 1px; border: 1px solid var(--border-soft); border-radius: 4px; background: var(--bg-input); cursor: pointer; }
+.pm-env { border-top: 1px solid var(--border); padding: 8px 0 4px; }
+.pm-env:first-of-type { border-top: 0; }
+.pm-env-current { box-shadow: inset 2px 0 0 var(--blue); padding-left: 8px; }
+.pm-env-line { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 4px 0; }
+.pm-env-line > input[type=text] { flex: 1; min-width: 120px; }
+.pm-env-tag { font-size: 11px; color: var(--fg-comment); text-transform: uppercase; letter-spacing: .06em; min-width: 42px; }
+.pm-env-preview { font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
+.pm-img-list { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+.pm-img-row { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 4px; cursor: pointer; }
+.pm-img-row:hover { background: var(--bg-hover); }
+.pm-img-thumb { width: 36px; height: 36px; object-fit: contain; background: var(--bg-input); border: 1px solid var(--border); border-radius: 3px; flex: none; }
+.pm-img-meta { display: flex; flex-direction: column; min-width: 0; }
+.pm-img-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--fg-bright); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 h3 { font-size: 11px; margin: 18px 0 6px; color: var(--fg-comment); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
 kbd { font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 5px; border: 1px solid var(--border-soft); border-bottom-width: 2px; border-radius: 4px; background: var(--bg-input); color: var(--fg-bright); }
 `;

@@ -7,6 +7,7 @@
 
 import { isMessage, type Message } from "./lib/messages.js";
 import { handleAutoreloadMessage, installAutoreload } from "./modules/autoreload/background.js";
+import { handleImagesMessage } from "./modules/images/background.js";
 
 interface Entry {
   id: string;
@@ -20,6 +21,8 @@ const ENTRIES: Entry[] = [
   { id: "formfill-fill", title: "Fill the forms on this page", message: { type: "formfill:fill" } },
   { id: "formfill-capture", title: "Capture this page's form into a rule", message: { type: "formfill:capture" } },
   { id: "autoreload-toggle", title: "Start / stop auto-reload for this tab", message: { type: "autoreload:toggle" } },
+  { id: "envswitch-cycle", title: "Switch to the next environment", message: { type: "envswitch:cycle" } },
+  { id: "images-grab", title: "Download every image on this page", message: { type: "images:grab" } },
 ];
 
 async function send(tabId: number | undefined, message: Message): Promise<void> {
@@ -62,10 +65,19 @@ chrome.action.onClicked.addListener((tab) => {
   void send(tab.id, { type: "panel:toggle" });
 });
 
+// The page asks the worker for the things only it can do. Each module's
+// handler returns undefined for messages it does not own.
+async function handleFromPage(message: Message, sender: chrome.runtime.MessageSender): Promise<unknown> {
+  const images = await handleImagesMessage(message);
+  if (images !== undefined) return images;
+  const autoreload = await handleAutoreloadMessage(message, sender);
+  return autoreload ?? null;
+}
+
 chrome.runtime.onMessage.addListener((raw: unknown, sender, sendResponse) => {
   if (!isMessage(raw)) return false;
-  handleAutoreloadMessage(raw, sender).then(
-    (result) => sendResponse(result ?? null),
+  handleFromPage(raw, sender).then(
+    (result) => sendResponse(result),
     (error: unknown) => sendResponse({ error: String(error) }),
   );
   return true;

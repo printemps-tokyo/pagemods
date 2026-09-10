@@ -3,12 +3,17 @@
 Small, pluggable mods for the page you are on, with a settings panel that
 opens inside the page.
 
-Two mods ship today:
+Four mods ship today:
 
 - Form fill. A rule is picked by a URL pattern, a field by a name/id pattern,
   and the value goes in. Fill from a button, the context menu or a keyboard
   command. Capture turns what you have already typed into a rule, so the
   usual way to write one is to fill the form once and press Capture.
+- Environments. Open the same page in local, staging or production, and wear
+  a corner badge that says which one you are on. Position, colour, opacity,
+  text and on/off are set per environment.
+- Image grab. Download every image on the page into one folder, flat, with
+  size and type filters.
 - Auto reload. Reload the current tab every N seconds until you stop it, with
   a countdown in the panel and a badge on the toolbar icon.
 
@@ -70,6 +75,49 @@ Patterns are JavaScript regular expressions and case-sensitive; write
 `(?i:signup)` for a case-insensitive part. A later rule, or a later field in
 the same rule, wins when two of them hit the same control, so put broad
 patterns first and specific ones after.
+
+### Environments
+
+A site is one project with several environments; an environment is a base URL.
+Everything after that prefix -- path, query and hash -- carries over when you
+switch, so the page you are looking at opens as the same page over there.
+
+1. Open the project in any environment, then Environments tab, Add site from
+   this page. The origin becomes the first environment.
+2. Add the others and give each a base URL, for example `http://localhost:3000`,
+   `https://stg.example.com` and `https://example.com`. A base may include a
+   path (`https://example.com/app`); the longer prefix wins when two overlap.
+3. Switch with the buttons at the top of the tab, the context menu, or a key
+   you bind to "Switch to the next environment" at `chrome://extensions/shortcuts`.
+
+Each environment carries its own badge: on/off, one of eight positions (four
+corners, and the middle of each edge), colour, opacity from 0.1 to 1, and text
+that defaults to the environment label. New environments start red for
+production, yellow for staging and green for local, and the badge picks black
+or white text for readability on the colour you choose. The badge never takes
+pointer events, so it cannot swallow a click meant for the page.
+
+When a project needs it, an environment can carry an explicit match pattern
+instead of the base prefix, for example `^https://(www\.)?example\.com` to
+treat both hosts as production.
+
+### Image grab
+
+Image grab tab, Scan this page, then Download selected. Files land in a folder
+under the browser's download directory, side by side, numbered in page order.
+
+- Folder: a path under the download directory, with `{host}` and `{date}`
+  filled in. Chrome only lets an extension write there, so an absolute path
+  elsewhere is not possible; change the download directory in Chrome's
+  settings if you need another root.
+- Minimum size skips icons and spacers. An image whose size the browser does
+  not know is kept rather than dropped.
+- Duplicated URLs collapse, names keep their extension, and colliding names
+  get a numeric suffix before Chrome's own uniquifying has to step in.
+- CSS background images are opt-in: finding them means reading computed styles
+  for every element.
+- `data:` and `blob:` images are skipped; the downloads API cannot fetch them.
+- At most 300 files per run.
 
 ### Auto reload
 
@@ -138,6 +186,7 @@ reads and writes elements.
 - `storage`: the settings document (`local`) and the auto-reload registry
   (`session`).
 - `contextMenus`: the right-click entries.
+- `downloads`: image grab, which is the only thing that writes files.
 - Content script on `http`, `https` and `file` pages: the panel and the
   shortcut have to be available on any page you might want to fill or reload.
   Nothing is read from a page until you click Fill, Capture or Test.
@@ -149,6 +198,13 @@ reads and writes elements.
 - Rules and values are stored as plain text in the browser profile. Keep
   secrets out of them, or at least keep password capture off (the default).
 - Pages that prompt before unloading will still prompt on auto-reload.
+- Downloaded images go under the browser's download directory and nowhere
+  else; that is a Chrome rule, not a choice this extension makes.
+- Images behind hotlink protection may fail: the downloads API fetches them
+  again rather than reusing what the page already loaded.
+- The environment badge follows the URL on ordinary navigations and on
+  history changes; a single-page app that only calls `pushState` under a base
+  URL with a path can leave it stale until the next load.
 
 ## License
 

@@ -100,6 +100,10 @@ async function boot(): Promise<void> {
         void Promise.resolve(module.init?.(ctx)).catch((error: unknown) => {
           console.warn(`pagemods: module ${module.id} failed to start`, error);
         });
+      } else if (isOn) {
+        void Promise.resolve(module.onSettingsChanged?.(ctx)).catch((error: unknown) => {
+          console.warn(`pagemods: module ${module.id} failed to apply settings`, error);
+        });
       }
     }
     panel.refresh();

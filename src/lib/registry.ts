@@ -39,6 +39,8 @@ export interface ContentModule {
   init?(ctx: ModuleContext): void | Promise<void>;
   /** Called when the module is switched off in the panel: stop timers, undo page changes. */
   dispose?(ctx: ModuleContext): void | Promise<void>;
+  /** Called after any settings change while the module stays enabled. */
+  onSettingsChanged?(ctx: ModuleContext): void | Promise<void>;
   /** Return `{ handled: true }` (optionally with a result) to claim a message. */
   onMessage?(
     message: Message,

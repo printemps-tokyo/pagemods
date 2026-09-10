@@ -2,24 +2,43 @@
   "manifest_version": 3,
   "name": "pagemods",
   "version": "0.1.0",
-  "description": "Pluggable page mods: fill forms from URL and field rules, auto-reload a tab, and more, from a settings panel that opens inside the page.",
+  "description": "Pluggable page mods: fill forms, switch environments with a corner badge, grab every image, auto-reload a tab, from a settings panel that opens inside the page.",
   "minimum_chrome_version": "125",
-  "permissions": ["storage", "contextMenus"],
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "downloads"
+  ],
   "background": {
     "service_worker": "src/background.js",
     "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*", "file:///*"],
-      "js": ["src/content/loader.js"],
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "file:///*"
+      ],
+      "js": [
+        "src/content/loader.js"
+      ],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/content/*.js", "src/lib/*.js", "src/modules/*.js", "src/modules/*/*.js"],
-      "matches": ["http://*/*", "https://*/*", "file:///*"]
+      "resources": [
+        "src/content/*.js",
+        "src/lib/*.js",
+        "src/modules/*.js",
+        "src/modules/*/*.js"
+      ],
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "file:///*"
+      ]
     }
   ],
   "action": {
@@ -39,7 +58,9 @@
   },
   "commands": {
     "toggle-panel": {
-      "suggested_key": { "default": "Alt+Shift+P" },
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      },
       "description": "Toggle the pagemods panel (the in-page shortcut, Ctrl+; by default, is configured in the panel)"
     },
     "formfill-fill": {
@@ -50,6 +71,12 @@
     },
     "autoreload-toggle": {
       "description": "Start or stop auto-reload for this tab"
+    },
+    "envswitch-cycle": {
+      "description": "Switch to the next environment (local / staging / production)"
+    },
+    "images-grab": {
+      "description": "Download every image on this page"
     }
   }
 }

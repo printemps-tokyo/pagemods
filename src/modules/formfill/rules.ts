@@ -5,6 +5,13 @@
 // gets which value, and capture turns the same snapshots back into rules.
 // That split keeps the matching logic testable under node.
 
+// These helpers live in lib now that other mods need them; re-exported so
+// this module's consumers keep a single import.
+import { newId } from "../../lib/ids.js";
+import { compilePattern, escapeRegex } from "../../lib/regex.js";
+
+export { compilePattern, escapeRegex, newId };
+
 export type MatchBy = "auto" | "name" | "id" | "label" | "css";
 
 export interface FieldRule {
@@ -82,12 +89,6 @@ function str(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
 }
 
-export function newId(): string {
-  const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
-  if (c?.randomUUID) return c.randomUUID().slice(0, 8);
-  return Math.random().toString(36).slice(2, 10);
-}
-
 export function normalizeField(raw: unknown): FieldRule {
   const f = isRecord(raw) ? raw : {};
   const by = MATCH_BY.includes(f.by as MatchBy) ? (f.by as MatchBy) : "auto";
@@ -117,22 +118,6 @@ export function normalizeFormfill(raw: unknown): FormfillSettings {
     rules: Array.isArray(s.rules) ? s.rules.map(normalizeRule) : [],
     capturePasswords: s.capturePasswords === true,
   };
-}
-
-/** Compile a pattern; null when it is empty or invalid. */
-export function compilePattern(source: string): RegExp | null {
-  if (source.trim() === "") return null;
-  try {
-    return new RegExp(source);
-  } catch {
-    return null;
-  }
-}
-
-const REGEX_SPECIALS = /[.*+?^${}()|[\]\\]/g;
-
-export function escapeRegex(text: string): string {
-  return text.replace(REGEX_SPECIALS, "\\$&");
 }
 
 /** A URL pattern for the page a capture came from: origin and path, anchored at the start. */
