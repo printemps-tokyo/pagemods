@@ -12,8 +12,9 @@ Four mods ship today:
 - Environments. Open the same page in local, staging or production, and wear
   a corner badge that says which one you are on. Position, colour, opacity,
   text and on/off are set per environment.
-- Image grab. Download every image on the page into one folder, flat, with
-  size and type filters.
+- Image grab. Download every image on the page into one folder, either side
+  by side or in the site's own directory structure, with size and type
+  filters.
 - Auto reload. Reload the current tab every N seconds until you stop it, with
   a countdown in the panel and a badge on the toolbar icon.
 
@@ -104,16 +105,24 @@ treat both hosts as production.
 ### Image grab
 
 Image grab tab, Scan this page, then Download selected. Files land in a folder
-under the browser's download directory, side by side, numbered in page order.
+under the browser's download directory.
 
 - Folder: a path under the download directory, with `{host}` and `{date}`
   filled in. Chrome only lets an extension write there, so an absolute path
   elsewhere is not possible; change the download directory in Chrome's
   settings if you need another root.
+- Layout: `Flat` puts every file directly in the folder, numbered in page
+  order. `Mirror` rebuilds the image's own URL path and file name under the
+  folder, so `https://example.com/assets/img/hero.jpg` arrives as
+  `<folder>/assets/img/hero.jpg`. Numbering and the file prefix are ignored
+  in mirror mode, since they would rewrite the names it exists to keep;
+  paths are capped at eight directories deep.
 - Minimum size skips icons and spacers. An image whose size the browser does
   not know is kept rather than dropped.
 - Duplicated URLs collapse, names keep their extension, and colliding names
-  get a numeric suffix before Chrome's own uniquifying has to step in.
+  get a numeric suffix before Chrome's own uniquifying has to step in. Two
+  images that want one path (the same name on another host, or a
+  query-string variant) are separated that way in mirror mode too.
 - CSS background images are opt-in: finding them means reading computed styles
   for every element.
 - `data:` and `blob:` images are skipped; the downloads API cannot fetch them.

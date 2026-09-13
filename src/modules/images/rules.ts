@@ -3,8 +3,8 @@
 // Chrome can only write inside the browser's download directory: the
 // `filename` of chrome.downloads.download is a path relative to it, and
 // absolute paths or ".." are rejected (chrome.downloads reference). So the
-// "directory" here is a folder under Downloads, and every file lands in it
-// side by side -- no per-origin nesting.
+// "directory" here is a folder under Downloads. Inside it, files either sit
+// side by side or rebuild the site's own path, depending on the layout.
 
 export type ImageKind = "img" | "background" | "poster";
 
@@ -16,9 +16,14 @@ export interface ImageItem {
   kind: ImageKind;
 }
 
+/** Where the files go inside the folder. */
+export type Layout = "flat" | "mirror";
+
 export interface ImagesSettings {
   /** Folder under the browser's download directory. Supports {host} and {date}. */
   folder: string;
+  /** "flat": every file side by side. "mirror": rebuild the site's own path. */
+  layout: Layout;
   minWidth: number;
   minHeight: number;
   includeBackgrounds: boolean;
@@ -30,6 +35,7 @@ export interface ImagesSettings {
 
 export const DEFAULTS: ImagesSettings = {
   folder: "pagemods/{host}",
+  layout: "flat",
   minWidth: 100,
   minHeight: 100,
   includeBackgrounds: false,
@@ -54,6 +60,7 @@ export function normalizeImages(raw: unknown): ImagesSettings {
   const s = isRecord(raw) ? raw : {};
   return {
     folder: typeof s.folder === "string" && s.folder.trim() !== "" ? s.folder.trim() : DEFAULTS.folder,
+    layout: s.layout === "mirror" ? "mirror" : "flat",
     minWidth: int(s.minWidth, DEFAULTS.minWidth),
     minHeight: int(s.minHeight, DEFAULTS.minHeight),
     includeBackgrounds: s.includeBackgrounds === true,
@@ -139,7 +146,7 @@ export function splitExtension(name: string): { stem: string; ext: string } {
 
 export interface PlannedDownload {
   url: string;
-  /** Path relative to the download directory: folder plus a flat file name. */
+  /** Path relative to the download directory: the folder plus the file's place in it. */
   filename: string;
   item: ImageItem;
 }
@@ -162,10 +169,46 @@ export function isDownloadable(url: string): boolean {
   }
 }
 
+/** How deep a mirrored path may go before the rest is dropped. */
+export const MAX_MIRROR_DEPTH = 8;
+
+/**
+ * The directories an image's URL path implies, sanitized. The file name
+ * itself is not included; `baseNameFor` gives that.
+ */
+export function pathDirsFor(url: string): string[] {
+  let path = url;
+  try {
+    path = new URL(url).pathname;
+  } catch {
+    return [];
+  }
+  const segments = path.split("/").filter((s) => s !== "");
+  // The last segment is the file name, not a directory.
+  segments.pop();
+  return segments
+    .filter((s) => s !== "." && s !== "..")
+    .map((s) => {
+      let decoded = s;
+      try {
+        decoded = decodeURIComponent(s);
+      } catch {
+        // Keep the raw segment when it is not valid UTF-8.
+      }
+      return sanitizeSegment(decoded, "dir");
+    })
+    .slice(0, MAX_MIRROR_DEPTH);
+}
+
 /**
  * Decide the file list. Items keep page order, duplicates by URL collapse,
  * and names collide as little as possible before Chrome's own uniquifying
  * has to step in.
+ *
+ * In "mirror" layout the site's own path and file name are rebuilt under the
+ * folder, so `/assets/img/hero.jpg` arrives as `assets/img/hero.jpg`.
+ * Numbering and the prefix are ignored there: they would change the very
+ * names the layout exists to preserve.
  */
 export function planDownloads(
   items: ImageItem[],
@@ -174,9 +217,10 @@ export function planDownloads(
   now = new Date(),
 ): Plan {
   const folder = resolveFolder(settings.folder, pageUrl, now);
-  const prefix = settings.prefix.trim() === "" ? "" : sanitizeSegment(settings.prefix, "") + "-";
+  const mirror = settings.layout === "mirror";
+  const prefix = mirror || settings.prefix.trim() === "" ? "" : sanitizeSegment(settings.prefix, "") + "-";
   const seenUrls = new Set<string>();
-  const usedNames = new Set<string>();
+  const usedPaths = new Set<string>();
   const downloads: PlannedDownload[] = [];
   const skipped = { tooSmall: 0, duplicate: 0, unsupported: 0, overLimit: 0 };
 
@@ -202,16 +246,21 @@ export function planDownloads(
     }
     seenUrls.add(item.url);
     const { stem, ext } = splitExtension(baseNameFor(item.url));
-    const number = settings.numberFiles ? String(downloads.length + 1).padStart(3, "0") + "-" : "";
+    const number = !mirror && settings.numberFiles ? String(downloads.length + 1).padStart(3, "0") + "-" : "";
     const base = sanitizeSegment(`${number}${prefix}${stem}`, `${number}${prefix}image`);
-    let name = ext === "" ? base : `${base}.${ext}`;
-    if (usedNames.has(name)) {
+    const dirs = mirror ? pathDirsFor(item.url) : [];
+    const dir = dirs.length === 0 ? "" : dirs.join("/") + "/";
+    const withExt = (stemText: string): string => (ext === "" ? stemText : `${stemText}.${ext}`);
+    // Two URLs can still want one path (a query-string variant, or the same
+    // name under two hosts), so the second one gets a suffix.
+    let relative = dir + withExt(base);
+    if (usedPaths.has(relative)) {
       let n = 2;
-      while (usedNames.has(ext === "" ? `${base}-${n}` : `${base}-${n}.${ext}`)) n++;
-      name = ext === "" ? `${base}-${n}` : `${base}-${n}.${ext}`;
+      while (usedPaths.has(dir + withExt(`${base}-${n}`))) n++;
+      relative = dir + withExt(`${base}-${n}`);
     }
-    usedNames.add(name);
-    downloads.push({ url: item.url, filename: folder === "" ? name : `${folder}/${name}`, item });
+    usedPaths.add(relative);
+    downloads.push({ url: item.url, filename: folder === "" ? relative : `${folder}/${relative}`, item });
   }
   return { downloads, folder, skipped };
 }

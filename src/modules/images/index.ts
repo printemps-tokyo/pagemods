@@ -8,6 +8,7 @@ import { collectImages } from "./content.js";
 import {
   DEFAULTS,
   MAX_FILES,
+  type Layout,
   describeSkipped,
   normalizeImages,
   planDownloads,
@@ -59,6 +60,12 @@ async function downloadAll(ctx: ModuleContext, urls?: Set<string>): Promise<void
   );
 }
 
+/** The part of the path the panel shows: where the file sits inside the folder. */
+function relativeTo(folder: string, filename: string): string {
+  const prefix = folder === "" ? "" : folder + "/";
+  return filename.startsWith(prefix) ? filename.slice(prefix.length) : filename;
+}
+
 function renderSettings(root: HTMLElement, ctx: ModuleContext): void {
   const settings = current(ctx);
 
@@ -73,11 +80,31 @@ function renderSettings(root: HTMLElement, ctx: ModuleContext): void {
   const preview = h("div", { class: "pm-note" });
   const updatePreview = () => {
     const resolved = resolveFolder(folder.value, location.href);
-    preview.textContent = `Files go to <downloads>/${resolved}/ side by side. {host} and {date} are filled in.`;
+    const shape = settings.layout === "mirror" ? "in the site's own path" : "side by side";
+    preview.textContent = `Files go to <downloads>/${resolved}/ ${shape}. {host} and {date} are filled in.`;
   };
   folder.addEventListener("input", updatePreview);
   updatePreview();
   root.appendChild(row("Folder", h("div", null, folder, preview), "Under the browser's download directory."));
+
+  const mirror = settings.layout === "mirror";
+  const layout = h(
+    "select",
+    {
+      onchange: () => void save(ctx, (s) => ({ ...s, layout: layout.value as Layout })),
+    },
+    h("option", { value: "flat", selected: !mirror }, "Flat: every file in the folder"),
+    h("option", { value: "mirror", selected: mirror }, "Mirror: the site's own paths and names"),
+  );
+  root.appendChild(
+    row(
+      "Layout",
+      layout,
+      mirror
+        ? "Rebuilds the image's URL path under the folder, e.g. assets/img/hero.jpg."
+        : "All files side by side, numbered in page order.",
+    ),
+  );
 
   const minW = h("input", {
     type: "number",
@@ -103,21 +130,35 @@ function renderSettings(root: HTMLElement, ctx: ModuleContext): void {
     ),
   );
 
+  // Numbering and a prefix rewrite the file name, which is the one thing the
+  // mirror layout is there to keep, so they are off the table there.
   const prefix = h("input", {
     type: "text",
     value: settings.prefix,
     placeholder: "optional file name prefix",
+    disabled: mirror,
     onchange: () => void save(ctx, (s) => ({ ...s, prefix: prefix.value })),
   });
-  root.appendChild(row("File prefix", prefix));
+  root.appendChild(row("File prefix", prefix, mirror ? "Not used by the mirror layout." : undefined));
 
   const numbered = h("input", {
     type: "checkbox",
-    checked: settings.numberFiles,
+    checked: settings.numberFiles && !mirror,
+    disabled: mirror,
     onchange: () => void save(ctx, (s) => ({ ...s, numberFiles: numbered.checked })),
   });
   root.appendChild(
-    h("label", { class: "pm-check" }, numbered, h("span", null, "Number the files (001-, 002-) to keep page order")),
+    h(
+      "label",
+      { class: "pm-check" },
+      numbered,
+      h(
+        "span",
+        null,
+        "Number the files (001-, 002-) to keep page order",
+        mirror ? h("span", { class: "pm-note" }, " (not used by the mirror layout)") : null,
+      ),
+    ),
   );
   const backgrounds = h("input", {
     type: "checkbox",
@@ -164,7 +205,7 @@ function renderSettings(root: HTMLElement, ctx: ModuleContext): void {
           h(
             "span",
             { class: "pm-img-meta" },
-            h("span", { class: "pm-img-name" }, d.filename.split("/").pop() ?? d.filename),
+            h("span", { class: "pm-img-name" }, relativeTo(plan.folder, d.filename)),
             h("span", { class: "pm-note" }, `${size}${d.item.kind === "img" ? "" : ` (${d.item.kind})`}`),
           ),
         ),
