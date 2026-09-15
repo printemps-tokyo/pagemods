@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "pagemods",
   "version": "0.1.0",
-  "description": "Pluggable page mods: fill forms, switch environments with a corner badge, grab every image, auto-reload a tab, from a settings panel that opens inside the page.",
+  "description": "Pluggable page mods: fill forms, hide elements and add CSS per site, switch environments with a corner badge, grab every image, auto-reload a tab.",
   "minimum_chrome_version": "125",
   "permissions": [
     "storage",
@@ -77,6 +77,12 @@
     },
     "images-grab": {
       "description": "Download every image on this page"
+    },
+    "styles-hide-target": {
+      "description": "Hide the element you last right-clicked, on this site"
+    },
+    "styles-pick": {
+      "description": "Pick an element to hide on this site"
     }
   }
 }

@@ -3,12 +3,14 @@
 Small, pluggable mods for the page you are on, with a settings panel that
 opens inside the page.
 
-Four mods ship today:
+Five mods ship today:
 
 - Form fill. A rule is picked by a URL pattern, a field by a name/id pattern,
   and the value goes in. Fill from a button, the context menu or a keyboard
   command. Capture turns what you have already typed into a rule, so the
   usual way to write one is to fill the form once and press Capture.
+- Site styles. Hide an element by picking it or right-clicking it, and add
+  your own CSS, per site. The page stays that way on every visit.
 - Environments. Open the same page in local, staging or production, and wear
   a corner badge that says which one you are on. Position, colour, opacity,
   text and on/off are set per environment.
@@ -76,6 +78,37 @@ Patterns are JavaScript regular expressions and case-sensitive; write
 `(?i:signup)` for a case-insensitive part. A later rule, or a later field in
 the same rule, wins when two of them hit the same control, so put broad
 patterns first and specific ones after.
+
+### Site styles
+
+Two ways to hide something:
+
+- Right-click it and choose "pagemods: hide this element on this site".
+- Open the Site styles tab and click "Pick an element to hide", then click the
+  element. The panel steps aside, the element under the pointer is outlined,
+  and Esc cancels.
+
+Either way a selector is added to the rule for that origin, one is created if
+there is none, and the element is hidden from then on. The tab lists every
+selector with how many elements it matches right now, so a selector that has
+gone stale is visible at a glance; an invalid one says so instead of failing
+quietly. Remove a selector and the element comes back.
+
+The CSS box below the list is injected as typed, and applies while you type.
+Both hiding and CSS are per rule, and a rule is picked by a URL pattern, so
+one rule can cover a whole site and another only its checkout.
+
+Hiding uses `display: none`, so nothing is removed from the page and a script
+that expects the element still finds it. Each selector becomes its own CSS
+rule: one invalid selector cannot take the rest of the list down with it. The
+extension's own panel and badge are always kept visible, so a broad selector
+cannot hide the thing you would undo it with.
+
+Selectors are generated from what the element has: its id when that is unique,
+otherwise its tag and classes, otherwise the shortest ancestor chain that
+picks it out. Sites that generate class names per build (`Button_root__2x9Kz`)
+will need the selector edited by hand once, since the generated name changes
+on the next deploy.
 
 ### Environments
 
@@ -207,6 +240,8 @@ reads and writes elements.
 - Rules and values are stored as plain text in the browser profile. Keep
   secrets out of them, or at least keep password capture off (the default).
 - Pages that prompt before unloading will still prompt on auto-reload.
+- Site styles are injected once the page has loaded, so a hidden element can
+  flash before it disappears.
 - Downloaded images go under the browser's download directory and nowhere
   else; that is a Chrome rule, not a choice this extension makes.
 - Images behind hotlink protection may fail: the downloads API fetches them

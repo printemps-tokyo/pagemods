@@ -104,6 +104,8 @@ input[type=color] { width: 34px; height: 26px; padding: 1px; border: 1px solid v
 .pm-env-line > input[type=text] { flex: 1; min-width: 120px; }
 .pm-env-tag { font-size: 11px; color: var(--fg-comment); text-transform: uppercase; letter-spacing: .06em; min-width: 42px; }
 .pm-env-preview { font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
+.pm-hide-list { display: flex; flex-direction: column; gap: 2px; }
+.pm-hide-list .pm-note, .pm-hide-list .pm-ok, .pm-hide-list .pm-error { white-space: nowrap; }
 .pm-img-list { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
 .pm-img-row { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 4px; cursor: pointer; }
 .pm-img-row:hover { background: var(--bg-hover); }

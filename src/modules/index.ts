@@ -9,6 +9,13 @@ import type { ContentModule } from "../lib/registry.js";
 import { autoreloadModule } from "./autoreload/content.js";
 import { envswitchModule } from "./envswitch/index.js";
 import { formfillModule } from "./formfill/index.js";
+import { stylesModule } from "./styles/index.js";
 import { imagesModule } from "./images/index.js";
 
-export const MODULES: ContentModule[] = [formfillModule, envswitchModule, imagesModule, autoreloadModule];
+export const MODULES: ContentModule[] = [
+  formfillModule,
+  stylesModule,
+  envswitchModule,
+  imagesModule,
+  autoreloadModule,
+];

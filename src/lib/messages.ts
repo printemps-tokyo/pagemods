@@ -27,6 +27,8 @@ export type Message =
   | { type: "autoreload:set"; intervalSec: number | null }
   | { type: "autoreload:toggle" }
   | { type: "envswitch:cycle" }
+  | { type: "styles:pick" }
+  | { type: "styles:hide-target" }
   | { type: "images:grab" }
   | { type: "images:download"; request: DownloadRequest };
 

@@ -22,6 +22,8 @@ const ENTRIES: Entry[] = [
   { id: "formfill-capture", title: "Capture this page's form into a rule", message: { type: "formfill:capture" } },
   { id: "autoreload-toggle", title: "Start / stop auto-reload for this tab", message: { type: "autoreload:toggle" } },
   { id: "envswitch-cycle", title: "Switch to the next environment", message: { type: "envswitch:cycle" } },
+  { id: "styles-hide-target", title: "Hide this element on this site", message: { type: "styles:hide-target" } },
+  { id: "styles-pick", title: "Pick an element to hide", message: { type: "styles:pick" } },
   { id: "images-grab", title: "Download every image on this page", message: { type: "images:grab" } },
 ];
 
