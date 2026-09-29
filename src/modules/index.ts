@@ -11,9 +11,11 @@ import { envswitchModule } from "./envswitch/index.js";
 import { formfillModule } from "./formfill/index.js";
 import { stylesModule } from "./styles/index.js";
 import { imagesModule } from "./images/index.js";
+import { formsModule } from "./forms/index.js";
 
 export const MODULES: ContentModule[] = [
   formfillModule,
+  formsModule,
   stylesModule,
   envswitchModule,
   imagesModule,

@@ -3,12 +3,14 @@
 Small, pluggable mods for the page you are on, with a settings panel that
 opens inside the page.
 
-Five mods ship today:
+Six mods ship today:
 
 - Form fill. A rule is picked by a URL pattern, a field by a name/id pattern,
   and the value goes in. Fill from a button, the context menu or a keyboard
   command. Capture turns what you have already typed into a rule, so the
   usual way to write one is to fill the form once and press Capture.
+- Form inspector. List every form control on the page with its type, id,
+  name and label, grouped by form, and copy the list as Markdown or TSV.
 - Site styles. Hide an element by picking it or right-clicking it, and add
   your own CSS, per site. The page stays that way on every visit.
 - Environments. Open the same page in local, staging or production, and wear
@@ -78,6 +80,26 @@ Patterns are JavaScript regular expressions and case-sensitive; write
 `(?i:signup)` for a case-insensitive part. A later rule, or a later field in
 the same rule, wins when two of them hit the same control, so put broad
 patterns first and specific ones after.
+
+### Form inspector
+
+Open the Form inspector tab to see every `input`, `textarea`, `select` and
+`button` on the page, one table per form (with the form's id or name, method
+and action) and a last table for controls outside any form. A control tied to
+a form by its `form` attribute is listed under that form. Columns: type, id,
+name, label (from `<label>`, `aria-label` or `aria-labelledby`; the
+placeholder in parentheses when there is none; a button's own text) and flags
+(required, disabled, readonly, hidden, number of options).
+
+- Click a row to scroll to the control and outline it for a moment.
+- Hidden controls (`type=hidden`, or not rendered because of `display:none`
+  on it or an ancestor) and buttons can be left out with the checkboxes.
+- Current values are off by default. When switched on, passwords still show
+  only `(filled)`.
+- Copy as Markdown (a table per form) or TSV (one row per control, for a
+  spreadsheet). Rescan after the page changes.
+
+Shadow DOM and iframes are not entered.
 
 ### Site styles
 

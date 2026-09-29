@@ -112,6 +112,13 @@ input[type=color] { width: 34px; height: 26px; padding: 1px; border: 1px solid v
 .pm-img-thumb { width: 36px; height: 36px; object-fit: contain; background: var(--bg-input); border: 1px solid var(--border); border-radius: 3px; flex: none; }
 .pm-img-meta { display: flex; flex-direction: column; min-width: 0; }
 .pm-img-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--fg-bright); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-form-list h3 { text-transform: none; letter-spacing: 0; font-size: 12px; color: var(--fg-bright); }
+.pm-form-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 8px; }
+.pm-form-table th { text-align: left; font-weight: 600; color: var(--fg-comment); border-bottom: 1px solid var(--border-soft); padding: 3px 6px; white-space: nowrap; }
+.pm-form-table td { border-bottom: 1px solid var(--border); padding: 3px 6px; vertical-align: top; word-break: break-all; }
+.pm-form-table tbody tr { cursor: pointer; }
+.pm-form-table tbody tr:hover { background: var(--bg-hover); }
+.pm-form-table tr.pm-form-hidden td { color: var(--fg-comment); }
 h3 { font-size: 11px; margin: 18px 0 6px; color: var(--fg-comment); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
 kbd { font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 5px; border: 1px solid var(--border-soft); border-bottom-width: 2px; border-radius: 4px; background: var(--bg-input); color: var(--fg-bright); }
 `;
