@@ -227,3 +227,24 @@ test("markdown escapes page text and keeps markup in code spans", () => {
   assert.match(md, /- JSON-LD 1: Article/);
   assert.match(md, /- Microdata: https:\/\/schema.org\/Product/);
 });
+
+test("robots directives are page text: escaped in Markdown, not part of the sentence", () => {
+  const meta = page({ robots: [{ name: "robots", content: 'noindex, <img src="https://evil.test/x.png">\n# Injected' }] });
+  const issue = checkPage(meta).find((i) => i.text.startsWith("noindex for Google Search"));
+  assert.ok(issue);
+  assert.doesNotMatch(issue.text, /img|Injected/);
+  const md = toMarkdown(meta);
+  assert.doesNotMatch(md, /<img/);
+  assert.doesNotMatch(md, /^# Injected/m);
+  assert.match(md, /&lt;img src="https:\/\/evil.test\/x.png"&gt; # Injected/);
+});
+
+test("non-http canonicals and hreflang URLs are errors and do not count", () => {
+  const js = canonical("javascript:void(0)");
+  assert.deepEqual(usableCanonicals(page({ canonicals: [js] })), []);
+  const t = texts(page({ canonicals: [js, canonical(URL0)] }));
+  assert.match(t, /error: rel=canonical is not an http\(s\) URL: javascript:void\(0\)/);
+  assert.doesNotMatch(t, /2 rel=canonical/);
+  const mail = texts(page({ alternates: [alternate("ja", URL0), alternate("en", "mailto:a@example.com")] }));
+  assert.match(mail, /error: hreflang link is not an http\(s\) URL: en mailto:a@example.com/);
+});

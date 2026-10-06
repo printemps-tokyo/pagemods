@@ -182,9 +182,14 @@ function blocksIndexing(directives: string[]): boolean {
   return directives.includes("noindex") || directives.includes("none");
 }
 
-/** The canonical links Google would consider: in <head>, without alternate-version attributes, with a usable URL. */
+/** A resolved URL a crawler can follow: http or https. */
+export function isHttpUrl(resolved: string): boolean {
+  return /^https?:/i.test(resolved);
+}
+
+/** The canonical links Google would consider: in <head>, without alternate-version attributes, with an http(s) URL. */
 export function usableCanonicals(meta: PageMeta): CanonicalLink[] {
-  return meta.canonicals.filter((c) => c.inHead && c.altAttributes.length === 0 && c.resolved !== "");
+  return meta.canonicals.filter((c) => c.inHead && c.altAttributes.length === 0 && isHttpUrl(c.resolved));
 }
 
 /** The og:* value for a property, treating og:image:url as og:image; "" when absent or blank. */
@@ -209,8 +214,8 @@ export function checkPage(meta: PageMeta): Issue[] {
   const googlebot = directivesFor(meta, "googlebot");
   const news = directivesFor(meta, "googlebot-news");
   const noindex = blocksIndexing(googlebot);
-  if (noindex) add("warn", `noindex for Google Search (${googlebot.join(", ")}).`);
-  else if (blocksIndexing(news)) add("info", `noindex for Google News only (googlebot-news: ${news.join(", ")}).`);
+  if (noindex) add("warn", "noindex for Google Search; robots/googlebot directives:", googlebot.join(", "));
+  else if (blocksIndexing(news)) add("info", "noindex for Google News only; googlebot-news directives:", news.join(", "));
 
   // Canonical: each link's own problems, then the set Google would use.
   for (const c of meta.canonicals) {
@@ -220,6 +225,7 @@ export function checkPage(meta: PageMeta): Issue[] {
       add("error", `rel=canonical with ${c.altAttributes.join(", ")} is not used for canonicalization by Google:`, shown);
     }
     if (c.resolved === "") add("error", `rel=canonical has no usable URL:`, shown);
+    else if (!isHttpUrl(c.resolved)) add("error", "rel=canonical is not an http(s) URL:", shown);
     else if (!hasHttpScheme(c.href)) add("warn", `rel=canonical is not an absolute URL (Google recommends absolute):`, shown);
   }
   const usable = usableCanonicals(meta);
@@ -244,9 +250,10 @@ export function checkPage(meta: PageMeta): Issue[] {
         add("warn", "hreflang value is not shaped like a language code (ISO 639-1, optional region):", `${a.hreflang} ${shown}`);
       }
       if (a.resolved === "") add("error", "hreflang link has no usable URL:", `${a.hreflang} ${shown}`);
+      else if (!isHttpUrl(a.resolved)) add("error", "hreflang link is not an http(s) URL:", `${a.hreflang} ${shown}`);
       else if (!isAbsoluteHttpUrl(a.href)) add("warn", `hreflang URL is not fully qualified:`, shown);
     }
-    const valid = meta.alternates.filter((a) => a.inHead && a.resolved !== "");
+    const valid = meta.alternates.filter((a) => a.inHead && isHttpUrl(a.resolved));
     if (valid.length > 0) {
       const self = usable[0]?.resolved || meta.url;
       if (!valid.some((a) => samePage(a.resolved, self) || samePage(a.resolved, meta.url))) {

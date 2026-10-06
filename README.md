@@ -144,9 +144,15 @@ Open the Page meta tab to see, read from the page as it is now:
   publish any.
 - Copy as Markdown or JSON (the JSON includes the issues). Copying rescans
   the page first and shows that scan, so the panel and the clipboard agree;
-  both carry the URL and the time of the scan. On plain `http://` pages,
-  where the browser's Clipboard API is unavailable, copying falls back to a
-  temporary text area (this applies to every copy button in pagemods).
+  both carry the URL and the time of the scan.
+
+Copying on plain `http://` pages: the browser's Clipboard API exists only on
+secure pages (https, localhost). On an `http://` page, Page meta and Form
+inspector copy through a temporary text area in the page instead. That text
+is what they read from the page itself, but the page's scripts can see it and
+can change what lands on the clipboard through their copy event. The settings
+export never takes that route, since it holds rules for other sites: on an
+`http://` page its text is selected for you to copy by hand.
 
 The panel reads the document as it is when you open it or press Rescan; on a
 single-page app, press Rescan after navigating. HTTP headers such as

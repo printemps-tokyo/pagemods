@@ -34,7 +34,8 @@ async function copy(ctx: ModuleContext, format: "markdown" | "tsv"): Promise<voi
   const { forms } = scanForms();
   const text = format === "markdown" ? toMarkdown(forms, settings, location.href) : toTsv(forms, settings);
   try {
-    await copyText(text);
+    // The list is read from this page, so the page-DOM fallback leaks nothing new.
+    await copyText(text, { pageFallback: true });
     ctx.notify(`Copied the form list as ${format === "markdown" ? "Markdown" : "TSV"}`, "ok");
   } catch (err) {
     ctx.notify(`Could not copy: ${(err as Error).message}`, "error");

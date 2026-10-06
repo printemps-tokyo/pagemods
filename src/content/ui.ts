@@ -80,15 +80,25 @@ export function confirmButton(label: string, confirmLabel: string, run: () => vo
 }
 
 /**
- * Copy text to the clipboard. The async Clipboard API needs a secure context,
- * so on a plain http:// page it does not exist; there the text goes through a
- * temporary textarea and execCommand("copy"), which still works in response
- * to a click. Rejects when both ways fail.
+ * Copy text to the clipboard.
+ *
+ * The async Clipboard API needs a secure context, so on a plain http:// page
+ * it does not exist. With `pageFallback`, the text then goes through a
+ * temporary textarea in the page's document and execCommand("copy"). That
+ * puts the text where the page's scripts can see it (a MutationObserver
+ * catches it even though it is removed at once) and fires the page's copy
+ * event, which can replace what is copied. So the fallback is only for text
+ * read from that same page (Page meta, Form inspector), never for anything
+ * the page should not see, such as the settings export. Rejects when no way
+ * works.
  */
-export async function copyText(text: string): Promise<void> {
+export async function copyText(text: string, opts: { pageFallback?: boolean } = {}): Promise<void> {
   if (window.isSecureContext && navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
     return;
+  }
+  if (!opts.pageFallback) {
+    throw new Error("the clipboard is not available on this http:// page");
   }
   const area = document.createElement("textarea");
   area.value = text;

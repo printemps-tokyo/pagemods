@@ -25,7 +25,8 @@ async function copy(ctx: ModuleContext, format: "markdown" | "json", scan: Scan 
       ? toMarkdown(scan.meta, scan.at)
       : JSON.stringify({ scannedAt: scan.at, ...scan.meta, issues: checkPage(scan.meta) }, null, 2) + "\n";
   try {
-    await copyText(text);
+    // Read from this page, so the page-DOM fallback on http:// leaks nothing new.
+    await copyText(text, { pageFallback: true });
     ctx.notify(`Copied the page meta as ${format === "markdown" ? "Markdown" : "JSON"}`, "ok");
   } catch (err) {
     ctx.notify(`Could not copy: ${(err as Error).message}`, "error");
@@ -111,6 +112,9 @@ function render(list: HTMLElement, scan: Scan): void {
   if (meta.microdata.length > 0) list.appendChild(h("div", { class: "pm-note" }, `Microdata: ${meta.microdata.join(", ")}`));
 }
 
+/** Set while the panel tab is rendered: copies through it so the display follows. */
+let copyThroughPanel: ((format: "markdown" | "json") => void) | undefined;
+
 function renderSettings(root: HTMLElement, ctx: ModuleContext): void {
   const list = h("div", { class: "pm-form-list" });
   let last = scanNow();
@@ -124,6 +128,7 @@ function renderSettings(root: HTMLElement, ctx: ModuleContext): void {
     show(scan);
     void copy(ctx, format, scan);
   };
+  copyThroughPanel = (format) => (list.isConnected ? copyShown(format) : void copy(ctx, format));
   root.appendChild(
     h(
       "div",
@@ -149,6 +154,12 @@ export const metaModule: ContentModule = {
   title: "Page meta",
   description:
     "Show what this page tells search engines and link previews: title, description, canonical, robots, hreflang, Open Graph, Twitter and structured data, with checks based on Google's and ogp.me's documentation.",
-  actions: [{ id: "copy", label: "Copy page meta as Markdown", run: (ctx) => copy(ctx, "markdown") }],
+  actions: [
+    {
+      id: "copy",
+      label: "Copy page meta as Markdown",
+      run: (ctx) => (copyThroughPanel ? copyThroughPanel("markdown") : copy(ctx, "markdown")),
+    },
+  ],
   renderSettings,
 };
