@@ -119,6 +119,13 @@ input[type=color] { width: 34px; height: 26px; padding: 1px; border: 1px solid v
 .pm-form-table tbody tr { cursor: pointer; }
 .pm-form-table tbody tr:hover { background: var(--bg-hover); }
 .pm-form-table tr.pm-form-hidden td { color: var(--fg-comment); }
+.pm-meta-issue { font-size: 12px; padding: 3px 6px; border-left: 2px solid var(--fg-comment); margin: 2px 0; }
+.pm-meta-issue b { text-transform: uppercase; font-size: 10px; letter-spacing: .06em; }
+.pm-meta-error { border-color: var(--red); color: var(--red); }
+.pm-meta-warn { border-color: var(--yellow); color: var(--yellow); }
+.pm-meta-info { border-color: var(--blue); }
+.pm-form-table tbody tr.pm-meta-row { cursor: default; }
+.pm-meta-og { max-width: 100%; max-height: 160px; border: 1px solid var(--border-soft); border-radius: 4px; margin-top: 6px; }
 h3 { font-size: 11px; margin: 18px 0 6px; color: var(--fg-comment); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
 kbd { font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 5px; border: 1px solid var(--border-soft); border-bottom-width: 2px; border-radius: 4px; background: var(--bg-input); color: var(--fg-bright); }
 `;

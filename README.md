@@ -3,7 +3,7 @@
 Small, pluggable mods for the page you are on, with a settings panel that
 opens inside the page.
 
-Six mods ship today:
+Seven mods ship today:
 
 - Form fill. A rule is picked by a URL pattern, a field by a name/id pattern,
   and the value goes in. Fill from a button, the context menu or a keyboard
@@ -11,6 +11,9 @@ Six mods ship today:
   usual way to write one is to fill the form once and press Capture.
 - Form inspector. List every form control on the page with its type, id,
   name and label, grouped by form, and copy the list as Markdown or TSV.
+- Page meta. What the page tells search engines and link previews: title,
+  description, canonical, robots, hreflang, Open Graph, Twitter cards and
+  structured data, with checks that cite Google's and ogp.me's rules.
 - Site styles. Hide an element by picking it or right-clicking it, and add
   your own CSS, per site. The page stays that way on every visit.
 - Environments. Open the same page in local, staging or production, and wear
@@ -100,6 +103,39 @@ placeholder in parentheses when there is none; a button's own text) and flags
   spreadsheet). Rescan after the page changes.
 
 Shadow DOM and iframes are not entered.
+
+### Page meta
+
+Open the Page meta tab to see, read from the page as it is now:
+
+- Basics: title, meta description, rel=canonical, the robots directives in
+  effect (`robots`, `googlebot` and `googlebot-news` metas, case-insensitive),
+  `lang`, charset, viewport and every `h1`.
+- hreflang alternates, Open Graph (`og:*`, with the `og:image` previewed),
+  Twitter cards (`twitter:*`), JSON-LD blocks with their `@type`s (including
+  `@graph`) and top-level microdata item types.
+- Issues, most severe first. Each check comes from a published rule:
+  - [Google, canonical](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls):
+    a rel=canonical outside `<head>` is ignored; absolute URLs are
+    recommended; noindex is not the way to choose a canonical. More than one
+    canonical is flagged, as an error when they point to different URLs.
+  - [Google, hreflang](https://developers.google.com/search/docs/specialty/international/localized-versions):
+    each language version must list itself; alternate URLs must be fully
+    qualified; codes are ISO 639-1 with an optional region; `x-default` is
+    recommended.
+  - [Google, robots meta](https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag):
+    `noindex` (or `none`) is pointed out.
+  - [ogp.me](https://ogp.me/): `og:title`, `og:type`, `og:image` and `og:url`
+    are required once a page uses Open Graph.
+  - A JSON-LD block that is not valid JSON; a missing `<title>`; more than one
+    meta description.
+
+  There are no length rules for titles or descriptions: Google does not
+  publish any.
+- Copy as Markdown or JSON (the JSON includes the issues).
+
+HTTP headers, such as `X-Robots-Tag`, are not visible to the page and are not
+checked.
 
 ### Site styles
 

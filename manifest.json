@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "pagemods",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Pluggable page mods: fill forms, hide elements and add CSS per site, switch environments with a corner badge, grab every image, auto-reload a tab.",
   "minimum_chrome_version": "125",
   "permissions": [

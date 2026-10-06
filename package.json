@@ -1,6 +1,6 @@
 {
   "name": "pagemods",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Chrome extension: pluggable page mods (form auto-fill by URL and field rules, tab auto-reload) with a settings panel that opens inside the page.",
   "license": "MIT",

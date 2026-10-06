@@ -12,10 +12,12 @@ import { formfillModule } from "./formfill/index.js";
 import { stylesModule } from "./styles/index.js";
 import { imagesModule } from "./images/index.js";
 import { formsModule } from "./forms/index.js";
+import { metaModule } from "./meta/index.js";
 
 export const MODULES: ContentModule[] = [
   formfillModule,
   formsModule,
+  metaModule,
   stylesModule,
   envswitchModule,
   imagesModule,
