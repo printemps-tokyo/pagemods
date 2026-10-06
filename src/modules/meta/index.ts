@@ -3,18 +3,29 @@
 // data), with checks that cite their sources (see rules.ts).
 
 import type { ContentModule, ModuleContext } from "../../lib/registry.js";
-import { button, clear, h } from "../../content/ui.js";
+import { button, clear, copyText, h } from "../../content/ui.js";
 import { readPageMeta } from "./content.js";
-import { checkPage, robotsDirectives, toMarkdown, type PageMeta } from "./rules.js";
+import { checkPage, isAbsoluteHttpUrl, ogValue, toMarkdown, type PageMeta } from "./rules.js";
 
 export const META_ID = "meta";
 
-async function copy(ctx: ModuleContext, format: "markdown" | "json"): Promise<void> {
-  const meta = readPageMeta();
+/** The scan the panel shows; copies rescan and refresh it, so what is copied is what is shown. */
+interface Scan {
+  meta: PageMeta;
+  at: string;
+}
+
+function scanNow(): Scan {
+  return { meta: readPageMeta(), at: new Date().toLocaleString() };
+}
+
+async function copy(ctx: ModuleContext, format: "markdown" | "json", scan: Scan = scanNow()): Promise<void> {
   const text =
-    format === "markdown" ? toMarkdown(meta) : JSON.stringify({ ...meta, issues: checkPage(meta) }, null, 2) + "\n";
+    format === "markdown"
+      ? toMarkdown(scan.meta, scan.at)
+      : JSON.stringify({ scannedAt: scan.at, ...scan.meta, issues: checkPage(scan.meta) }, null, 2) + "\n";
   try {
-    await navigator.clipboard.writeText(text);
+    await copyText(text);
     ctx.notify(`Copied the page meta as ${format === "markdown" ? "Markdown" : "JSON"}`, "ok");
   } catch (err) {
     ctx.notify(`Could not copy: ${(err as Error).message}`, "error");
@@ -36,13 +47,24 @@ function table(head: [string, string], rows: [string, string][]): HTMLElement {
   );
 }
 
-function render(list: HTMLElement, meta: PageMeta): void {
+function render(list: HTMLElement, scan: Scan): void {
+  const meta = scan.meta;
   clear(list);
+  list.appendChild(h("p", { class: "pm-note" }, `${meta.url} — scanned ${scan.at}`));
   const issues = checkPage(meta);
   list.appendChild(h("h3", null, `Issues (${issues.length})`));
   if (issues.length === 0) list.appendChild(h("p", { class: "pm-note" }, "None found."));
   for (const i of issues) {
-    list.appendChild(h("div", { class: `pm-meta-issue pm-meta-${i.severity}` }, h("b", null, i.severity), " ", i.text));
+    list.appendChild(
+      h(
+        "div",
+        { class: `pm-meta-issue pm-meta-${i.severity}` },
+        h("b", null, i.severity),
+        " ",
+        i.text.replace(/`/g, ""),
+        i.subject !== undefined ? h("span", { class: "pm-mono" }, ` ${i.subject}`) : null,
+      ),
+    );
   }
 
   list.appendChild(h("h3", null, "Basics"));
@@ -54,7 +76,7 @@ function render(list: HTMLElement, meta: PageMeta): void {
         ...meta.descriptions.map((d): [string, string] => ["description", d]),
         ...(meta.descriptions.length === 0 ? [["description", ""] as [string, string]] : []),
         ...meta.canonicals.map((c): [string, string] => ["canonical", c.href]),
-        ["robots", robotsDirectives(meta).join(", ")],
+        ...meta.robots.map((r): [string, string] => [r.name, r.content]),
         ["lang", meta.lang],
         ["charset", meta.charset],
         ["viewport", meta.viewport],
@@ -70,8 +92,8 @@ function render(list: HTMLElement, meta: PageMeta): void {
   list.appendChild(h("h3", null, "Open Graph"));
   if (meta.openGraph.length > 0) list.appendChild(table(["property", "content"], meta.openGraph.map((o) => [o.property, o.content])));
   else list.appendChild(h("p", { class: "pm-note" }, "No og:* tags."));
-  const image = meta.openGraph.find((o) => o.property === "og:image")?.content;
-  if (image) list.appendChild(h("img", { class: "pm-meta-og", src: image, alt: "og:image", loading: "lazy" }));
+  const image = ogValue(meta, "og:image");
+  if (image && isAbsoluteHttpUrl(image)) list.appendChild(h("img", { class: "pm-meta-og", src: image, alt: "og:image", loading: "lazy" }));
 
   if (meta.twitter.length > 0) {
     list.appendChild(h("h3", null, "Twitter"));
@@ -91,25 +113,35 @@ function render(list: HTMLElement, meta: PageMeta): void {
 
 function renderSettings(root: HTMLElement, ctx: ModuleContext): void {
   const list = h("div", { class: "pm-form-list" });
-  const scan = () => render(list, readPageMeta());
+  let last = scanNow();
+  const show = (scan: Scan) => {
+    last = scan;
+    render(list, scan);
+  };
+  // Copy rescans first and shows that scan, so the panel and the clipboard agree.
+  const copyShown = (format: "markdown" | "json") => {
+    const scan = scanNow();
+    show(scan);
+    void copy(ctx, format, scan);
+  };
   root.appendChild(
     h(
       "div",
       { class: "pm-actions" },
-      button("Rescan", scan),
-      button("Copy as Markdown", () => void copy(ctx, "markdown"), "primary"),
-      button("Copy as JSON", () => void copy(ctx, "json")),
+      button("Rescan", () => show(scanNow())),
+      button("Copy as Markdown", () => copyShown("markdown"), "primary"),
+      button("Copy as JSON", () => copyShown("json")),
     ),
   );
   root.appendChild(
     h(
       "p",
       { class: "pm-note" },
-      "Read from the page as it is now (after scripts ran). HTTP headers such as X-Robots-Tag are not visible here.",
+      "Read from this document as it is now (after scripts ran). Single-page apps: press Rescan after navigating. HTTP headers such as X-Robots-Tag, iframes and shadow DOM are not read.",
     ),
   );
   root.appendChild(list);
-  scan();
+  show(last);
 }
 
 export const metaModule: ContentModule = {

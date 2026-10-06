@@ -4,6 +4,11 @@ import { parseJsonLd, resolveUrl, type PageMeta } from "./rules.js";
 
 const ROBOTS_NAMES = new Set(["robots", "googlebot", "googlebot-news"]);
 
+const XHTML = "http://www.w3.org/1999/xhtml";
+
+/** The attributes that make Google ignore a rel=canonical. */
+const CANONICAL_ALT_ATTRIBUTES = ["hreflang", "lang", "media", "type"];
+
 function text(el: Element | null | undefined): string {
   return el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 }
@@ -22,7 +27,8 @@ export function readPageMeta(doc: Document = document): PageMeta {
   return {
     url,
     title: doc.title,
-    titleCount: doc.querySelectorAll("title").length,
+    // HTML titles only: an inline SVG has <title> elements of its own.
+    titleCount: Array.from(doc.getElementsByTagName("title")).filter((t) => t.namespaceURI === XHTML).length,
     lang: doc.documentElement.getAttribute("lang") ?? "",
     charset: doc.characterSet,
     viewport: named((n) => n === "viewport")[0]?.getAttribute("content") ?? "",
@@ -35,13 +41,23 @@ export function readPageMeta(doc: Document = document): PageMeta {
       .filter((l) => rels(l).includes("canonical"))
       .map((l) => {
         const href = l.getAttribute("href") ?? "";
-        return { href, resolved: resolveUrl(href, base), inHead: l.closest("head") !== null };
+        return {
+          href,
+          resolved: resolveUrl(href, base),
+          inHead: l.closest("head") !== null,
+          altAttributes: CANONICAL_ALT_ATTRIBUTES.filter((a) => l.hasAttribute(a)),
+        };
       }),
     alternates: links
       .filter((l) => rels(l).includes("alternate") && l.hasAttribute("hreflang"))
       .map((l) => {
         const href = l.getAttribute("href") ?? "";
-        return { hreflang: l.getAttribute("hreflang") ?? "", href, resolved: resolveUrl(href, base) };
+        return {
+          hreflang: l.getAttribute("hreflang") ?? "",
+          href,
+          resolved: resolveUrl(href, base),
+          inHead: l.closest("head") !== null,
+        };
       }),
     openGraph: metas
       .filter((m) => (m.getAttribute("property") ?? "").toLowerCase().startsWith("og:"))

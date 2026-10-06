@@ -3,7 +3,7 @@
 
 import type { ContentModule, ModuleContext } from "../../lib/registry.js";
 import { moduleSettings } from "../../lib/settings.js";
-import { button, clear, h } from "../../content/ui.js";
+import { button, clear, copyText, h } from "../../content/ui.js";
 import { pointAt, scanForms } from "./content.js";
 import {
   DEFAULTS,
@@ -34,7 +34,7 @@ async function copy(ctx: ModuleContext, format: "markdown" | "tsv"): Promise<voi
   const { forms } = scanForms();
   const text = format === "markdown" ? toMarkdown(forms, settings, location.href) : toTsv(forms, settings);
   try {
-    await navigator.clipboard.writeText(text);
+    await copyText(text);
     ctx.notify(`Copied the form list as ${format === "markdown" ? "Markdown" : "TSV"}`, "ok");
   } catch (err) {
     ctx.notify(`Could not copy: ${(err as Error).message}`, "error");

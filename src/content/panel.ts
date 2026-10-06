@@ -12,7 +12,7 @@ import type { Settings } from "../lib/settings.js";
 import { exportSettings, importSettings, normalize } from "../lib/settings.js";
 import { comboFromEvent, formatShortcut, parseShortcut } from "../lib/shortcut.js";
 import { CSS } from "./theme.js";
-import { button, clear, confirmButton, h, row } from "./ui.js";
+import { button, clear, confirmButton, copyText, h, row } from "./ui.js";
 
 export interface PanelHost {
   open(moduleId?: string): void;
@@ -290,7 +290,7 @@ export function createPanel(opts: PanelOptions): PanelHost {
     container.appendChild(h("h3", null, "Export / import"));
     const exportArea = h("textarea", { readonly: "", spellcheck: "false" }, exportSettings(settings));
     const copyBtn = button("Copy", () => {
-      void navigator.clipboard.writeText(exportArea.value).then(
+      void copyText(exportArea.value).then(
         () => notify("Settings copied to the clipboard"),
         () => {
           exportArea.select();

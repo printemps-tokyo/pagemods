@@ -108,34 +108,49 @@ Shadow DOM and iframes are not entered.
 
 Open the Page meta tab to see, read from the page as it is now:
 
-- Basics: title, meta description, rel=canonical, the robots directives in
-  effect (`robots`, `googlebot` and `googlebot-news` metas, case-insensitive),
-  `lang`, charset, viewport and every `h1`.
+- Basics: title, meta description, rel=canonical, each `robots`,
+  `googlebot` and `googlebot-news` meta as written, `lang`, charset, viewport
+  and every `h1`.
 - hreflang alternates, Open Graph (`og:*`, with the `og:image` previewed),
   Twitter cards (`twitter:*`), JSON-LD blocks with their `@type`s (including
   `@graph`) and top-level microdata item types.
 - Issues, most severe first. Each check comes from a published rule:
   - [Google, canonical](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls):
-    a rel=canonical outside `<head>` is ignored; absolute URLs are
-    recommended; noindex is not the way to choose a canonical. More than one
-    canonical is flagged, as an error when they point to different URLs.
+    a rel=canonical outside `<head>` is ignored, and so is one with
+    `hreflang`, `lang`, `media` or `type`; absolute URLs are recommended;
+    noindex is not the way to choose a canonical. A canonical with no usable
+    URL is an error; more than one usable canonical is flagged, as an error
+    when they point to different URLs.
   - [Google, hreflang](https://developers.google.com/search/docs/specialty/international/localized-versions):
-    each language version must list itself; alternate URLs must be fully
-    qualified; codes are ISO 639-1 with an optional region; `x-default` is
-    recommended.
+    the links must be in `<head>`; each language version must list itself;
+    alternate URLs must be fully qualified; `x-default` is recommended. The
+    language code is checked for its shape only (two letters, optional
+    script and region); whether the code exists in ISO 639-1 / ISO 3166-1 is
+    not checked, so `jp` passes.
   - [Google, robots meta](https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag):
-    `noindex` (or `none`) is pointed out.
+    `noindex` (or `none`) from `robots` or `googlebot` is a noindex for Google
+    Search; from `googlebot-news` alone it is reported as Google News only.
   - [ogp.me](https://ogp.me/): `og:title`, `og:type`, `og:image` and `og:url`
-    are required once a page uses Open Graph.
+    are required once a page uses Open Graph, and blank values count as
+    missing; `og:image:url` counts as `og:image` ("Identical to og:image");
+    `og:image` and `og:url` should be absolute http(s) URLs.
+  - [HTML](https://html.spec.whatwg.org/multipage/semantics.html#the-title-element):
+    "There must be no more than one title element per document" (an inline
+    SVG's `<title>` does not count).
   - A JSON-LD block that is not valid JSON; a missing `<title>`; more than one
     meta description.
 
   There are no length rules for titles or descriptions: Google does not
   publish any.
-- Copy as Markdown or JSON (the JSON includes the issues).
+- Copy as Markdown or JSON (the JSON includes the issues). Copying rescans
+  the page first and shows that scan, so the panel and the clipboard agree;
+  both carry the URL and the time of the scan. On plain `http://` pages,
+  where the browser's Clipboard API is unavailable, copying falls back to a
+  temporary text area (this applies to every copy button in pagemods).
 
-HTTP headers, such as `X-Robots-Tag`, are not visible to the page and are not
-checked.
+The panel reads the document as it is when you open it or press Rescan; on a
+single-page app, press Rescan after navigating. HTTP headers such as
+`X-Robots-Tag`, iframes and shadow DOM are not read.
 
 ### Site styles
 

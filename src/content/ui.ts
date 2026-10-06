@@ -79,6 +79,30 @@ export function confirmButton(label: string, confirmLabel: string, run: () => vo
   return btn;
 }
 
+/**
+ * Copy text to the clipboard. The async Clipboard API needs a secure context,
+ * so on a plain http:// page it does not exist; there the text goes through a
+ * temporary textarea and execCommand("copy"), which still works in response
+ * to a click. Rejects when both ways fail.
+ */
+export async function copyText(text: string): Promise<void> {
+  if (window.isSecureContext && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const area = document.createElement("textarea");
+  area.value = text;
+  area.setAttribute("readonly", "");
+  area.style.cssText = "position:fixed;top:0;left:-9999px;opacity:0";
+  document.documentElement.appendChild(area);
+  try {
+    area.select();
+    if (!document.execCommand("copy")) throw new Error("the browser refused to copy");
+  } finally {
+    area.remove();
+  }
+}
+
 export function debounce<A extends unknown[]>(fn: (...args: A) => void, ms: number): (...args: A) => void {
   let timer: number | undefined;
   return (...args: A) => {
