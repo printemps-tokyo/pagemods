@@ -31,15 +31,28 @@ bundler and no runtime dependency.
 
 ## Install
 
-There is no store listing yet. Build and load the unpacked extension:
+There is no store listing yet. Either take a release build or build it yourself,
+then load it unpacked.
+
+From a release: download `pagemods-<version>.zip` and its `.sha256` from the
+[Releases](https://github.com/printemps-tokyo/pagemods/releases) page, then
+
+```sh
+shasum -a 256 -c pagemods-<version>.zip.sha256
+unzip pagemods-<version>.zip -d pagemods
+```
+
+From source:
 
 ```sh
 npm install
 npm run build
 ```
 
-Then open `chrome://extensions`, switch on Developer mode, choose Load
-unpacked and select the `dist/` directory. For `file://` pages, also switch on
+Then open `chrome://extensions`, switch on Developer mode, choose Load unpacked
+and select the unzipped `pagemods/` directory (or `dist/` when built from
+source). Chrome does not update an unpacked extension: to upgrade, replace the
+directory's contents and press the reload button on the extension's card. For `file://` pages, also switch on
 "Allow access to file URLs" on the extension's card.
 
 Requires Chrome 125 or later.
