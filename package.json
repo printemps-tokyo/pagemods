@@ -14,7 +14,7 @@
     "check": "npm run typecheck && npm test && npm run build"
   },
   "devDependencies": {
-    "@types/chrome": "^0.2",
+    "@types/chrome": "^0.3.7",
     "@types/node": "^24",
     "typescript": "^7"
   }
