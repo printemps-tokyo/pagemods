@@ -12,6 +12,11 @@ Thanks for your interest in contributing to pagemods.
    npm run check
    ```
 5. Load `dist/` as an unpacked extension and try the change on a real page
+
+   `npm run e2e` loads the built `dist/` into Chromium and checks the content
+   script, the shortcut and the styles and envswitch modules on a local page.
+   It needs Playwright's Chromium once (`npx playwright install chromium`), or
+   another Chromium build named by `E2E_CHROMIUM`; CI runs it on every push.
 6. Commit and open a pull request
 
 ## Ground rules
